@@ -14,36 +14,29 @@ from typing import List, Dict
 class Config:
     """Configuration for PPO-LLM Strategy Shaping experiments."""
     
-    # Environment settings
     layout: str = "asymmetric_advantages"
     horizon: int = 400
-    num_actions: int = 6  # Will be set dynamically from Action.ALL_ACTIONS
+    num_actions: int = 6
     
-    # Device
     device: str = field(default_factory=lambda: "cuda" if torch.cuda.is_available() else "cpu")
     
-    # Training
     seeds: List[int] = field(default_factory=lambda: [1001, 2002, 3003, 4004, 5005])
     checkpoint_every_steps: int = 50_000
     log_every_steps: int = 2_048
     eval_episodes: int = 10
     
-    # PPO hyperparameters
     n_steps: int = 2048
     batch_size: int = 2048
     learning_rate: float = 3e-4
     gamma: float = 0.99
     
-    # LLM settings
     llm_model_name: str = "EleutherAI/gpt-neo-1.3B"
     llm_bonus: float = 0.2
     
-    # Environment perturbation settings
     noise_std: float = 0.01
     delay_noise_prob: float = 0.2
     delay_penalty: float = 0.5
     
-    # Baseline configurations
     baseline_steps: Dict[str, int] = field(default_factory=lambda: {
         "Baseline": 1_000_000,
         "CC_PPO": 1_000_000,
@@ -53,11 +46,9 @@ class Config:
         "PBT_PPO": 1_000_000,
     })
     
-    # Nash analysis
     br_train_steps: int = 200_000
     br_eval_episodes: int = 20
     
-    # Paths (will be set based on base_dir)
     base_dir: str = "/content/drive/MyDrive"
     
     @property
@@ -92,10 +83,7 @@ class Config:
     def task_agg_csv(self) -> str:
         return os.path.join(self.base_dir, "task_completion_agg.csv")
 
-
-# Default configuration instance
 DEFAULT_CONFIG = Config()
 
-# Environment and baseline names
 BASELINES = ["Baseline", "PPO+LLM", "CC_PPO", "SP_PPO", "HARL", "PBT_PPO"]
 ENV_NAMES = ["No Noise", "Noise", "Delay", "Combo"]

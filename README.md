@@ -3,15 +3,15 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**LLM-guided reward shaping for multi-agent coordination in Overcooked**
+LLM-guided reward shaping for multi-agent coordination in Overcooked.
 
-This repository contains the code for reproducing experiments on using Large Language Models (LLMs) to provide reward shaping signals for Proximal Policy Optimization (PPO) agents in the Overcooked multi-agent environment.
+Code for reproducing experiments on using Large Language Models to provide reward shaping signals for PPO agents in the Overcooked multi-agent environment.
 
 ## Overview
 
-We investigate whether LLM-based reward shaping can accelerate learning and improve coordination in multi-agent settings. Our approach:
+Investigates whether LLM-based reward shaping can accelerate learning and improve coordination in multi-agent settings. The experiments include:
 
-1. **PPO+LLM**: Uses GPT-Neo to evaluate state descriptions and provide auxiliary reward signals based on whether the current state appears "good" or "bad"
+1. **PPO+LLM**: Uses GPT-Neo to evaluate state descriptions and provide auxiliary reward signals
 2. **Robustness Testing**: Evaluates policies under observation noise, action delays, and combined perturbations
 3. **Comprehensive Baselines**: Compares against CC-PPO, SP-PPO, HARL, and PBT-PPO
 
@@ -37,17 +37,21 @@ pip install -e .
 
 ```
 PPO-LLM-Strategy-Shaping/
-├── src/
-│   └── ppo_llm_strategy_shaping/
-│       ├── __init__.py          # Package exports
-│       ├── config.py            # Configuration dataclass
-│       ├── env_wrappers.py      # Gymnasium environment wrappers
-│       ├── llm_shaping.py       # LLM reward shaping logic
-│       ├── train.py             # Training loops and callbacks
-│       ├── evaluation.py        # Analysis functions
-│       └── utils.py             # Utility functions
+├── src/ppo_llm_strategy_shaping/
+│   ├── config.py              # Configuration dataclass
+│   ├── env_wrappers.py        # Gymnasium environment wrappers
+│   ├── llm_shaping.py         # LLM reward shaping
+│   ├── train.py               # Training and callbacks
+│   ├── evaluation.py          # Analysis functions
+│   └── utils.py               # Utilities
 ├── notebooks/
-│   └── experiments.ipynb        # Main experiment notebook
+│   ├── 01_setup.ipynb
+│   ├── 02_training.ipynb
+│   ├── 03_nash_analysis.ipynb
+│   ├── 04_latency_analysis.ipynb
+│   ├── 05_robustness_analysis.ipynb
+│   ├── 06_task_completion.ipynb
+│   └── 07_llm_sensitivity.ipynb
 ├── requirements.txt
 ├── pyproject.toml
 └── README.md
@@ -55,55 +59,35 @@ PPO-LLM-Strategy-Shaping/
 
 ## Quick Start
 
-### Python API
+Jupyter notebooks are provided in `notebooks/` for interactive experimentation. Each notebook is self-contained and can run independently in Google Colab:
 
-```python
-from ppo_llm_strategy_shaping import Config, train_all, evaluate
-
-# Create configuration
-config = Config(
-    layout="cramped_room",
-    horizon=400,
-    seeds=[42, 123, 456],
-)
-
-# Train all baselines
-results = train_all(config, n_jobs=4, verbose=1)
-
-# Evaluate
-from ppo_llm_strategy_shaping import nash_gap_analysis, latency_analysis
-nash_results = nash_gap_analysis(config)
-latency_results = latency_analysis(config)
-```
-
-### Using the Notebook
-
-Open `notebooks/experiments.ipynb` for an interactive walkthrough of:
-- Training all baselines
-- Nash gap analysis
-- Latency measurements
-- Robustness evaluation
-- Task completion metrics
+1. `01_setup.ipynb` - Environment and dependency setup
+2. `02_training.ipynb` - Train all baselines across perturbation regimes
+3. `03_nash_analysis.ipynb` - Best response analysis
+4. `04_latency_analysis.ipynb` - LLM inference latency measurement
+5. `05_robustness_analysis.ipynb` - Robustness under perturbations
+6. `06_task_completion.ipynb` - Task completion metrics
+7. `07_llm_sensitivity.ipynb` - Model size comparison (125M vs 1.3B)
 
 ## Baselines
 
-| Baseline | Description | Training Steps |
-|----------|-------------|----------------|
-| Baseline | Vanilla PPO | 1,000,000 |
-| PPO+LLM | PPO with LLM reward shaping | 600,000 |
-| CC_PPO | Centralized Critic PPO | 1,000,000 |
-| SP_PPO | Self-Play PPO | 1,000,000 |
-| HARL | Heterogeneous-Agent RL | 1,000,000 |
-| PBT_PPO | Population-Based Training | 1,000,000 |
+| Baseline | Training Steps |
+|----------|----------------|
+| Baseline | 1,000,000 |
+| PPO+LLM | 600,000 |
+| CC_PPO | 1,000,000 |
+| SP_PPO | 1,000,000 |
+| HARL | 1,000,000 |
+| PBT_PPO | 1,000,000 |
 
 ## Environment Perturbations
 
-We test robustness under four regimes:
+Robustness tested under four regimes:
 
-- **No Noise**: Standard environment
-- **Noise**: Gaussian observation noise (std=0.01)
-- **Delay**: 20% probability of action delay with penalty
-- **Combo**: Combined noise and delay
+- No Noise: Standard environment
+- Noise: Gaussian observation noise (std=0.01)
+- Delay: 20% probability action delay with penalty
+- Combo: Combined noise and delay
 
 ## Configuration
 
@@ -111,31 +95,27 @@ Key hyperparameters in `Config`:
 
 ```python
 Config(
-    # Environment
-    layout="cramped_room",
+    layout="asymmetric_advantages",
     horizon=400,
     
     # PPO
-    lr=3e-4,
+    learning_rate=3e-4,
     n_steps=2048,
-    batch_size=64,
-    n_epochs=10,
+    batch_size=2048,
     gamma=0.99,
     
-    # LLM Shaping
-    llm_model="EleutherAI/gpt-neo-1.3B",
-    llm_reward_scale=0.1,
+    # LLM shaping
+    llm_model_name="EleutherAI/gpt-neo-1.3B",
+    llm_bonus=0.2,
     
     # Perturbations
     noise_std=0.01,
-    delay_prob=0.2,
-    delay_penalty=-0.5,
+    delay_noise_prob=0.2,
+    delay_penalty=0.5,
 )
 ```
 
 ## Results
-
-Our experiments show that:
 
 1. PPO+LLM achieves comparable performance with 40% fewer training steps
 2. LLM-shaped policies show improved robustness to perturbations
