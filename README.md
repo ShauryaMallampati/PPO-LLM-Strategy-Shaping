@@ -2,34 +2,28 @@
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/)
+[![arXiv](https://img.shields.io/badge/arXiv-2507.02002-b31b1b.svg)](https://arxiv.org/abs/2507.02002)
 
-LLM-guided reward shaping for multi-agent coordination in Overcooked.
 
-Code for reproducing experiments on using Large Language Models to provide reward shaping signals for PPO agents in the Overcooked multi-agent environment.
+**Note:** Developed in Google Colab. Local execution may require syntax adjustments for file paths, GPU configuration, and environment setup.
 
 ## Overview
 
-Investigates whether LLM-based reward shaping can accelerate learning and improve coordination in multi-agent settings. The experiments include:
+Evaluates LLM-based reward shaping for accelerating learning and improving coordination in multi-agent PPO training. The approach uses language models to evaluate state descriptions and provide auxiliary reward signals. Experiments include:
 
-1. **PPO+LLM**: Uses GPT-Neo to evaluate state descriptions and provide auxiliary reward signals
-2. **Robustness Testing**: Evaluates policies under observation noise, action delays, and combined perturbations
-3. **Comprehensive Baselines**: Compares against CC-PPO, SP-PPO, HARL, and PBT-PPO
+- **PPO+LLM**: Reward shaping with GPT-Neo
+- **Robustness Evaluation**: Observation noise, action delays, combined perturbations
+- **Baselines**: CC-PPO, SP-PPO, HARL, PBT-PPO
 
 ## Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/ShauryaMallampati/PPO-LLM-Strategy-Shaping.git
 cd PPO-LLM-Strategy-Shaping
-
-# Create virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate
 pip install -r requirements.txt
-
-# Or install as a package
 pip install -e .
 ```
 
@@ -38,12 +32,12 @@ pip install -e .
 ```
 PPO-LLM-Strategy-Shaping/
 ├── src/ppo_llm_strategy_shaping/
-│   ├── config.py              # Configuration dataclass
-│   ├── env_wrappers.py        # Gymnasium environment wrappers
-│   ├── llm_shaping.py         # LLM reward shaping
-│   ├── train.py               # Training and callbacks
-│   ├── evaluation.py          # Analysis functions
-│   └── utils.py               # Utilities
+│   ├── config.py
+│   ├── env_wrappers.py
+│   ├── llm_shaping.py
+│   ├── train.py
+│   ├── evaluation.py
+│   └── utils.py
 ├── notebooks/
 │   ├── 01_setup.ipynb
 │   ├── 02_training.ipynb
@@ -57,89 +51,58 @@ PPO-LLM-Strategy-Shaping/
 └── README.md
 ```
 
-## Quick Start
+## Usage
 
-Jupyter notebooks are provided in `notebooks/` for interactive experimentation. Each notebook is self-contained and can run independently in Google Colab:
+Notebook-based interface for all experiments:
 
-1. `01_setup.ipynb` - Environment and dependency setup
-2. `02_training.ipynb` - Train all baselines across perturbation regimes
-3. `03_nash_analysis.ipynb` - Best response analysis
-4. `04_latency_analysis.ipynb` - LLM inference latency measurement
-5. `05_robustness_analysis.ipynb` - Robustness under perturbations
-6. `06_task_completion.ipynb` - Task completion metrics
-7. `07_llm_sensitivity.ipynb` - Model size comparison (125M vs 1.3B)
+| Notebook | Purpose |
+|----------|---------|
+| 01_setup.ipynb | Environment setup |
+| 02_training.ipynb | Train baselines across perturbation regimes |
+| 03_nash_analysis.ipynb | Best response analysis |
+| 04_latency_analysis.ipynb | LLM inference latency |
+| 05_robustness_analysis.ipynb | Perturbation robustness |
+| 06_task_completion.ipynb | Task completion metrics |
+| 07_llm_sensitivity.ipynb | Model size comparison |
 
-## Baselines
+## Experimental Setup
 
-| Baseline | Training Steps |
-|----------|----------------|
-| Baseline | 1,000,000 |
-| PPO+LLM | 600,000 |
-| CC_PPO | 1,000,000 |
-| SP_PPO | 1,000,000 |
-| HARL | 1,000,000 |
-| PBT_PPO | 1,000,000 |
+**Baselines:** Baseline, PPO+LLM, CC-PPO, SP-PPO, HARL, PBT-PPO
 
-## Environment Perturbations
+**Environment:** Overcooked with asymmetric advantages layout (horizon 400)
 
-Robustness tested under four regimes:
+**Perturbation Regimes:**
+- Standard (no noise)
+- Observation noise (σ=0.01)
+- Action delay (20% probability, penalty 0.5)
+- Combined noise and delay
 
-- No Noise: Standard environment
-- Noise: Gaussian observation noise (std=0.01)
-- Delay: 20% probability action delay with penalty
-- Combo: Combined noise and delay
-
-## Configuration
-
-Key hyperparameters in `Config`:
-
-```python
-Config(
-    layout="asymmetric_advantages",
-    horizon=400,
-    
-    # PPO
-    learning_rate=3e-4,
-    n_steps=2048,
-    batch_size=2048,
-    gamma=0.99,
-    
-    # LLM shaping
-    llm_model_name="EleutherAI/gpt-neo-1.3B",
-    llm_bonus=0.2,
-    
-    # Perturbations
-    noise_std=0.01,
-    delay_noise_prob=0.2,
-    delay_penalty=0.5,
-)
-```
+**LLM Configuration:** GPT-Neo 1.3B with reward bonus 0.2
 
 ## Results
 
-1. PPO+LLM achieves comparable performance with 40% fewer training steps
-2. LLM-shaped policies show improved robustness to perturbations
-3. Inference latency remains practical for real-time deployment
+- PPO+LLM achieves comparable performance with 40% fewer training steps
+- Improved robustness under observation noise, action delays, and combined perturbations
+- Practical inference latency for real-time deployment
 
 ## Citation
 
-If you use this code in your research, please cite:
+Mallampati, S., Shelim, R., Saad, W., & Ramakrishnan, N. (2025). Dynamic strategy adaptation in multi-agent environments with large language models. *arXiv preprint arXiv:2507.02002*.
 
 ```bibtex
-@misc{mallampati2025ppollm,
-  title={PPO-LLM Strategy Shaping: LLM-Guided Reward Shaping for Multi-Agent Coordination},
-  author={Mallampati, Shaurya},
-  year={2025},
-  url={https://github.com/ShauryaMallampati/PPO-LLM-Strategy-Shaping}
+@misc{mallampati2025dynamicstrategyadaptationmultiagent,
+      title={Dynamic Strategy Adaptation in Multi-Agent Environments with Large Language Models}, 
+      author={Shaurya Mallampati and Rashed Shelim and Walid Saad and Naren Ramakrishnan},
+      year={2025},
+      eprint={2507.02002},
+      archivePrefix={arXiv},
+      primaryClass={cs.MA},
+      url={https://arxiv.org/abs/2507.02002}
 }
 ```
 
-## License
+## References
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Overcooked-AI environment (https://github.com/HumanCompatibleAI/overcooked_ai)
-- Stable-Baselines3 for PPO implementation (https://github.com/DLR-RM/stable-baselines3)
-- EleutherAI for GPT-Neo models (https://www.eleuther.ai/)
+- [Overcooked-AI](https://github.com/HumanCompatibleAI/overcooked_ai)
+- [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3)
+- [EleutherAI GPT-Neo](https://www.eleuther.ai/)
