@@ -1,8 +1,8 @@
 """
 Environment wrappers for Overcooked multi-agent coordination experiments.
 
-This module provides Gymnasium-compatible wrappers for the Overcooked environment
-with various perturbation regimes (noise, delay, combo) and reward shaping variants.
+Provides Gymnasium-compatible wrappers with perturbation regimes
+(noise, delay, combo) and reward shaping variants.
 """
 
 import random
@@ -17,22 +17,15 @@ from overcooked_ai_py.mdp.actions import Action
 
 from .config import DEFAULT_CONFIG
 
-# Number of actions in Overcooked
 NUM_ACTIONS = len(Action.ALL_ACTIONS)
 
 
 class OCWrapper(gym.Env):
     """
-    True 2-agent Overcooked wrapper.
+    Multi-agent Overcooked environment wrapper.
     
-    This wrapper provides:
-    - observation: global featurized state (flattened)
-    - action_space: MultiDiscrete([NUM_ACTIONS, NUM_ACTIONS]) for joint actions
-    - reward: shared team reward
-    
-    Args:
-        layout: Name of the Overcooked layout to use
-        horizon: Maximum episode length
+    Provides global featurized state observation and joint action space.
+    Reward is shared across agents.
     """
     metadata = {"render.modes": []}
 
@@ -78,15 +71,6 @@ class OCWrapper(gym.Env):
         self, 
         action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
-        """
-        Execute joint action in the environment.
-        
-        Args:
-            action: Array of [action_agent_0, action_agent_1]
-            
-        Returns:
-            obs, reward, terminated, truncated, info
-        """
         a0, a1 = int(action[0]), int(action[1])
         joint = [Action.ALL_ACTIONS[a0], Action.ALL_ACTIONS[a1]]
         state, r, done, info = self.oc.step(joint)
@@ -95,16 +79,7 @@ class OCWrapper(gym.Env):
 
 
 class OCWrapperNoise(OCWrapper):
-    """
-    Overcooked wrapper with observation noise.
-    
-    Adds Gaussian noise to observations to test robustness to sensory perturbations.
-    
-    Args:
-        layout: Name of the Overcooked layout
-        horizon: Maximum episode length
-        noise_std: Standard deviation of Gaussian noise added to observations
-    """
+    """Overcooked wrapper with observation noise perturbation."""
     
     def __init__(
         self, 
@@ -122,18 +97,7 @@ class OCWrapperNoise(OCWrapper):
 
 
 class OCWrapperDelay(OCWrapper):
-    """
-    Overcooked wrapper with stochastic reward delays/penalties.
-    
-    Simulates communication delays or action execution failures by randomly
-    penalizing rewards.
-    
-    Args:
-        layout: Name of the Overcooked layout
-        horizon: Maximum episode length
-        noise_prob: Probability of applying delay penalty per step
-        delay_penalty: Penalty subtracted from reward when delay occurs
-    """
+    """Overcooked wrapper with stochastic reward delay penalties."""
     
     def __init__(
         self, 
@@ -154,19 +118,7 @@ class OCWrapperDelay(OCWrapper):
 
 
 class OCWrapperCombo(OCWrapper):
-    """
-    Overcooked wrapper with combined noise and delay perturbations.
-    
-    Combines observation noise and stochastic reward penalties for maximum
-    environmental challenge.
-    
-    Args:
-        layout: Name of the Overcooked layout
-        horizon: Maximum episode length
-        noise_std: Standard deviation of observation noise
-        noise_prob: Probability of delay penalty
-        delay_penalty: Penalty amount when delay occurs
-    """
+    """Overcooked wrapper with combined noise and delay perturbations."""
     
     def __init__(
         self, 
@@ -190,17 +142,7 @@ class OCWrapperCombo(OCWrapper):
 
 
 class OCWrapperLLM(OCWrapper):
-    """
-    Overcooked wrapper with LLM-based reward shaping.
-    
-    Uses a language model to evaluate joint actions and provide bonus rewards
-    for actions deemed "cooperative" or "helpful".
-    
-    Args:
-        layout: Name of the Overcooked layout
-        horizon: Maximum episode length
-        llm_bonus: Reward bonus added when LLM judges actions as "good"
-    """
+    """Overcooked wrapper with LLM-based reward shaping."""
     
     def __init__(
         self, 
