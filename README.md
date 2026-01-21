@@ -23,14 +23,14 @@ Run these notebooks **in order** on Google Colab:
 - **Delay**: Stochastic reward delays (20% prob, -0.5 penalty)
 - **Combo**: Both noise and delay
 
-## Baselines
+## Baselines (per Paper Table 1)
 
-- **Baseline**: Vanilla PPO with shared team reward
-- **PPO+LLM**: PPO with LLM-based reward shaping (GPT-Neo 1.3B) - compares logits for "good" vs "bad" tokens
-- **CC_PPO**: Centralized Critic PPO (CTDE) - augmented observations with agent ID and partner's last action for centralized value estimation
-- **SP_PPO**: Self-Play PPO - maintains opponent pool, samples from past policies (80%) or random (20%)
-- **HARL**: Hierarchical Attention RL - multi-head self-attention mechanism to hierarchically weight observation features
-- **PBT_PPO**: Population-Based Training PPO - hyperparameter exploration (lr, entropy, gamma) when performance stagnates
+- **Baseline**: Independent PPO self-play with environment reward only
+- **PPO+LLM**: PPO with frozen-LLM gated reward shaping (GPT-Neo 1.3B) - compares logits for "good" vs "bad" tokens to provide bonus reward
+- **CC_PPO**: PPO with centralized critic training signal - same wrapper, but centralized value function during training
+- **SP_PPO**: PPO with self-play style training protocol - same wrapper, trains via self-play curriculum
+- **HARL**: Hand-designed reward shaping based on task progress heuristics (orders_remaining: +1.0 if done, +0.5 if <3)
+- **PBT_PPO**: PPO with population-based hyperparameter tuning during training - perturbs lr/entropy when performance stagnates
 
 ## Configuration
 
