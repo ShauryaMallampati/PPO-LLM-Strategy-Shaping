@@ -1,108 +1,41 @@
 # PPO-LLM Strategy Shaping
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/)
-[![arXiv](https://img.shields.io/badge/arXiv-2507.02002-b31b1b.svg)](https://arxiv.org/abs/2507.02002)
+Dynamic Strategy Adaptation in Multi-Agent Environments using PPO with LLM-based reward shaping.
 
+## Notebooks
 
-**Note:** Developed in Google Colab. Local execution may require syntax adjustments for file paths, GPU configuration, and environment setup.
+Run these notebooks **in order** on Google Colab:
 
-## Overview
+| Notebook | Description |
+|----------|-------------|
+| [01_setup.ipynb](notebooks/01_setup.ipynb) | Setup dependencies, clone overcooked_ai, mount Google Drive |
+| [02_training.ipynb](notebooks/02_training.ipynb) | Train all baselines (Baseline, PPO+LLM, CC_PPO, SP_PPO, HARL, PBT_PPO) |
+| [03_nash_analysis.ipynb](notebooks/03_nash_analysis.ipynb) | Compute Nash equilibrium gaps via best-response training |
+| [04_latency_analysis.ipynb](notebooks/04_latency_analysis.ipynb) | Measure per-step decision latency (ms) |
+| [05_robustness_analysis.ipynb](notebooks/05_robustness_analysis.ipynb) | Compute robustness deltas across environment perturbations |
+| [06_task_completion.ipynb](notebooks/06_task_completion.ipynb) | Compute sparse reward task completion metrics |
+| [07_llm_sensitivity.ipynb](notebooks/07_llm_sensitivity.ipynb) | Train PPO+LLM with GPT-Neo 125M for LLM size sensitivity |
 
-Evaluates LLM-based reward shaping for accelerating learning and improving coordination in multi-agent PPO training. The approach uses language models to evaluate state descriptions and provide auxiliary reward signals. Experiments include:
+## Environment Regimes
 
-- **PPO+LLM**: Reward shaping with GPT-Neo
-- **Robustness Evaluation**: Observation noise, action delays, combined perturbations
-- **Baselines**: CC-PPO, SP-PPO, HARL, PBT-PPO
+- **No Noise**: Clean environment
+- **Noise**: Gaussian observation noise (σ=0.01)
+- **Delay**: Stochastic reward delays (20% prob, -0.5 penalty)
+- **Combo**: Both noise and delay
 
-## Installation
+## Baselines
 
-```bash
-git clone https://github.com/ShauryaMallampati/PPO-LLM-Strategy-Shaping.git
-cd PPO-LLM-Strategy-Shaping
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-```
+- **Baseline**: Vanilla PPO
+- **PPO+LLM**: PPO with LLM-based reward shaping (GPT-Neo 1.3B)
+- **CC_PPO**: Centralized Critic PPO
+- **SP_PPO**: Self-Play PPO
+- **HARL**: Hierarchical Attention RL
+- **PBT_PPO**: Population-Based Training PPO
 
-## Project Structure
+## Configuration
 
-```
-PPO-LLM-Strategy-Shaping/
-├── src/ppo_llm_strategy_shaping/
-│   ├── config.py
-│   ├── env_wrappers.py
-│   ├── llm_shaping.py
-│   ├── train.py
-│   ├── evaluation.py
-│   └── utils.py
-├── notebooks/
-│   ├── 01_setup.ipynb
-│   ├── 02_training.ipynb
-│   ├── 03_nash_analysis.ipynb
-│   ├── 04_latency_analysis.ipynb
-│   ├── 05_robustness_analysis.ipynb
-│   ├── 06_task_completion.ipynb
-│   └── 07_llm_sensitivity.ipynb
-├── requirements.txt
-├── pyproject.toml
-└── README.md
-```
-
-## Usage
-
-Notebook-based interface for all experiments:
-
-| Notebook | Purpose |
-|----------|---------|
-| 01_setup.ipynb | Environment setup |
-| 02_training.ipynb | Train baselines across perturbation regimes |
-| 03_nash_analysis.ipynb | Best response analysis |
-| 04_latency_analysis.ipynb | LLM inference latency |
-| 05_robustness_analysis.ipynb | Perturbation robustness |
-| 06_task_completion.ipynb | Task completion metrics |
-| 07_llm_sensitivity.ipynb | Model size comparison |
-
-## Experimental Setup
-
-**Baselines:** Baseline, PPO+LLM, CC-PPO, SP-PPO, HARL, PBT-PPO
-
-**Environment:** Overcooked with asymmetric advantages layout (horizon 400)
-
-**Perturbation Regimes:**
-- Standard (no noise)
-- Observation noise (σ=0.01)
-- Action delay (20% probability, penalty 0.5)
-- Combined noise and delay
-
-**LLM Configuration:** GPT-Neo 1.3B with reward bonus 0.2
-
-## Results
-
-- PPO+LLM achieves comparable performance with 40% fewer training steps
-- Improved robustness under observation noise, action delays, and combined perturbations
-- Practical inference latency for real-time deployment
-
-## Citation
-
-Mallampati, S., Shelim, R., Saad, W., & Ramakrishnan, N. (2025). Dynamic strategy adaptation in multi-agent environments with large language models. *arXiv preprint arXiv:2507.02002*.
-
-```bibtex
-@misc{mallampati2025dynamicstrategyadaptationmultiagent,
-      title={Dynamic Strategy Adaptation in Multi-Agent Environments with Large Language Models}, 
-      author={Shaurya Mallampati and Rashed Shelim and Walid Saad and Naren Ramakrishnan},
-      year={2025},
-      eprint={2507.02002},
-      archivePrefix={arXiv},
-      primaryClass={cs.MA},
-      url={https://arxiv.org/abs/2507.02002}
-}
-```
-
-## References
-
-- [Overcooked-AI](https://github.com/HumanCompatibleAI/overcooked_ai)
-- [Stable-Baselines3](https://github.com/DLR-RM/stable-baselines3)
-- [EleutherAI GPT-Neo](https://www.eleuther.ai/)
+- Layout: `asymmetric_advantages`
+- Horizon: 400 steps
+- Seeds: [1001, 2002, 3003, 4004, 5005]
+- PPO+LLM: 600k steps
+- Other baselines: 1M steps
