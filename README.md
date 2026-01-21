@@ -25,12 +25,12 @@ Run these notebooks **in order** on Google Colab:
 
 ## Baselines
 
-- **Baseline**: Vanilla PPO
-- **PPO+LLM**: PPO with LLM-based reward shaping (GPT-Neo 1.3B)
-- **CC_PPO**: Centralized Critic PPO
-- **SP_PPO**: Self-Play PPO
-- **HARL**: Hierarchical Attention RL
-- **PBT_PPO**: Population-Based Training PPO
+- **Baseline**: Vanilla PPO with shared team reward
+- **PPO+LLM**: PPO with LLM-based reward shaping (GPT-Neo 1.3B) - compares logits for "good" vs "bad" tokens
+- **CC_PPO**: Centralized Critic PPO (CTDE) - augmented observations with agent ID and partner's last action for centralized value estimation
+- **SP_PPO**: Self-Play PPO - maintains opponent pool, samples from past policies (80%) or random (20%)
+- **HARL**: Hierarchical Attention RL - multi-head self-attention mechanism to hierarchically weight observation features
+- **PBT_PPO**: Population-Based Training PPO - hyperparameter exploration (lr, entropy, gamma) when performance stagnates
 
 ## Configuration
 
